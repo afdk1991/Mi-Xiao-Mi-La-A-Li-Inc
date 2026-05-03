@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户注册 - 亿级商城</title>
+  <meta name="description" content="亿级商城用户注册">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+    }
+    .auth-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+    }
+    .auth-title {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 30px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s;
+    }
+    .auth-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+    .auth-form {
+      display: none;
+    }
+    .auth-form.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .code-input-group {
+      display: flex;
+      gap: 10px;
+    }
+    .code-input-group .form-input {
+      flex: 1;
+    }
+    .code-btn {
+      padding: 12px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.3s;
+    }
+    .code-btn:hover {
+      background: #5568d3;
+    }
+    .code-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+    }
+    .btn-submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+    }
+    .auth-footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+    .error-msg {
+      background: #fee;
+      border: 1px solid #fcc;
+      color: #c00;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+    .back-home {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .back-home a {
+      color: white;
+      text-decoration: none;
+    }
+    .success-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .success-modal.show {
+      display: flex;
+    }
+    .success-content {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    .success-icon {
+      font-size: 60px;
+      color: #07c160;
+      margin-bottom: 20px;
+    }
+    .success-text {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .success-sub {
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .user-id-box {
+      background: #f5f7fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .user-id-label {
+      font-size: 14px;
+      color: #999;
+    }
+    .user-id-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .success-tip {
+      font-size: 14px;
+      color: #999;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container">
+      <h1 class="auth-title">用户注册</h1>
+      
+      <div id="errorMsg" class="error-msg"></div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="account">账号注册</div>
+        <div class="auth-tab" data-tab="phone">手机注册</div>
+        <div class="auth-tab" data-tab="email">邮箱注册</div>
+      </div>
+
+      <!-- 账号密码注册 -->
+      <form id="accountForm" class="auth-form active">
+        <div class="form-group">
+          <label class="form-label">账号</label>
+          <input type="text" class="form-input" name="account" placeholder="请输入账号" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">昵称</label>
+          <input type="text" class="form-input" name="nickname" placeholder="请输入昵称" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码</label>
+          <input type="password" class="form-input" name="password" placeholder="请输入密码" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认密码</label>
+          <input type="password" class="form-input" name="confirmPassword" placeholder="请再次输入密码" required>
+        </div>
+        <button type="submit" class="btn-submit">注册</button>
+      </form>
+
+      <!-- 手机验证码注册 -->
+      <form id="phoneForm" class="auth-form">
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <input type="tel" class="form-input" name="phone" placeholder="请输入手机号" pattern="^1[3-9]\d{9}$" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">验证码</label>
+          <div class="code-input-group">
+            <input type="text" class="form-input" name="code" placeholder="请输入验证码" required>
+            <button type="button" class="code-btn" id="phoneCodeBtn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">昵称 (可选)</label>
+          <input type="text" class="form-input" name="nickname" placeholder="请输入昵称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 (可选)</label>
+          <input type="password" class="form-input" name="password" placeholder="请输入密码">
+        </div>
+        <button type="submit" class="btn-submit">注册</button>
+      </form>
+
+      <!-- 邮箱验证码注册 -->
+      <form id="emailForm" class="auth-form">
+        <div class="form-group">
+          <label class="form-label">邮箱</label>
+          <input type="email" class="form-input" name="email" placeholder="请输入邮箱" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">验证码</label>
+          <div class="code-input-group">
+            <input type="text" class="form-input" name="code" placeholder="请输入验证码" required>
+            <button type="button" class="code-btn" id="emailCodeBtn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">昵称 (可选)</label>
+          <input type="text" class="form-input" name="nickname" placeholder="请输入昵称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 (可选)</label>
+          <input type="password" class="form-input" name="password" placeholder="请输入密码">
+        </div>
+        <button type="submit" class="btn-submit">注册</button>
+      </form>
+
+      <div class="auth-footer">
+        已有账号？<a href="login.html">立即登录</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="back-home">
+    <a href="index.html">← 返回首页</a>
+  </div>
+
+  <!-- 注册成功弹窗 -->
+  <div id="successModal" class="success-modal">
+    <div class="success-content">
+      <div class="success-icon">✓</div>
+      <div class="success-text">注册成功！</div>
+      <div class="success-sub">恭喜您完成注册</div>
+      <div class="user-id-box">
+        <div class="user-id-label">您的用户ID：</div>
+        <div class="user-id-value" id="registeredUserId">-</div>
+      </div>
+      <div class="success-tip">请牢记您的用户ID</div>
+      <button class="btn-submit" onclick="goToLogin()">立即登录</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+
+    // Tab切换
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab + 'Form').classList.add('active');
+      });
+    });
+
+    // 显示错误信息
+    function showError(msg) {
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.textContent = msg;
+      errorDiv.classList.add('show');
+      setTimeout(() => errorDiv.classList.remove('show'), 3000);
+    }
+
+    // 发送验证码
+    let codeCountdown = 0;
+    function startCodeCountdown(btnId) {
+      codeCountdown = 60;
+      const btn = document.getElementById(btnId);
+      const timer = setInterval(() => {
+        codeCountdown--;
+        btn.textContent = codeCountdown > 0 ? codeCountdown + 's' : '获取验证码';
+        btn.disabled = codeCountdown > 0;
+        if (codeCountdown <= 0) clearInterval(timer);
+      }, 1000);
+    }
+
+    async function sendCode(type) {
+      let data;
+      if (type === 'phone') {
+        const phone = document.querySelector('#phoneForm input[name="phone"]').value;
+        if (!phone) { showError('请先输入手机号'); return; }
+        data = { phone };
+      } else {
+        const email = document.querySelector('#emailForm input[name="email"]').value;
+        if (!email) { showError('请先输入邮箱'); return; }
+        data = { email };
+      }
+
+      try {
+        const res = await fetch(API_BASE + '/auth/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (json.success) {
+          alert(json.data.message || '验证码已发送');
+          startCodeCountdown(type === 'phone' ? 'phoneCodeBtn' : 'emailCodeBtn');
+        } else {
+          showError(json.msg || '发送验证码失败');
+        }
+      } catch (error) {
+        showError('网络错误');
+      }
+    }
+
+    document.getElementById('phoneCodeBtn').addEventListener('click', () => sendCode('phone'));
+    document.getElementById('emailCodeBtn').addEventListener('click', () => sendCode('email'));
+
+    // 账号注册
+    document.getElementById('accountForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      if (formData.get('password') !== formData.get('confirmPassword')) {
+        showError('两次输入的密码不一致');
+        return;
+      }
+
+      const data = {
+        account: formData.get('account'),
+        nickname: formData.get('nickname'),
+        password: formData.get('password'),
+        registerType: 'account'
+      };
+
+      try {
+        const res = await fetch(API_BASE + '/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (json.success) {
+          document.getElementById('registeredUserId').textContent = json.data.userId;
+          document.getElementById('successModal').classList.add('show');
+        } else {
+          showError(json.msg || '注册失败');
+        }
+      } catch (error) {
+        showError('网络错误');
+      }
+    });
+
+    // 手机注册
+    document.getElementById('phoneForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        phone: formData.get('phone'),
+        verifyCode: formData.get('code'),
+        nickname: formData.get('nickname') || undefined,
+        password: formData.get('password') || undefined,
+        registerType: 'phone'
+      };
+
+      try {
+        const res = await fetch(API_BASE + '/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (json.success) {
+          document.getElementById('registeredUserId').textContent = json.data.userId;
+          document.getElementById('successModal').classList.add('show');
+        } else {
+          showError(json.msg || '注册失败');
+        }
+      } catch (error) {
+        showError('网络错误');
+      }
+    });
+
+    // 邮箱注册
+    document.getElementById('emailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        email: formData.get('email'),
+        verifyCode: formData.get('code'),
+        nickname: formData.get('nickname') || undefined,
+        password: formData.get('password') || undefined,
+        registerType: 'email'
+      };
+
+      try {
+        const res = await fetch(API_BASE + '/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (json.success) {
+          document.getElementById('registeredUserId').textContent = json.data.userId;
+          document.getElementById('successModal').classList.add('show');
+        } else {
+          showError(json.msg || '注册失败');
+        }
+      } catch (error) {
+        showError('网络错误');
+      }
+    });
+
+    function goToLogin() {
+      document.getElementById('successModal').classList.remove('show');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

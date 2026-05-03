@@ -1,0 +1,26 @@
+libpng License
+
+Copyright (c) 2026 MIXMLAAL Team
+
+This code is released under the libpng license.
+
+libpng versions 1.0.6, July 1999, through 1.6.x, are Copyright (c) 2004, 2006-2019
+Glenn Randers-Pehrson; Copyright (c) 1996-1997 Andreas Dilger;
+Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
+
+If you modify libpng you may insert additional notices immediately following
+this sentence.
+
+This software is distributed under the terms of the libpng license,
+Version 2, which is derived from the zlib/libpng License Version 1.0.0
+and has been approved by the OSI and FSF.
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source distribution.

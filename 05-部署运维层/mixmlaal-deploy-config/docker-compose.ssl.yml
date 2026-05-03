@@ -1,0 +1,257 @@
+# ============================================
+# laal.top 完全完整部署配置 - 包含自动 HTTPS/SSL
+# 使用 Traefik 作为反向代理和自动证书管理
+# ============================================
+version: '3.8'
+
+services:
+
+  # ============================================
+  # Traefik 反向代理 + 自动 HTTPS 证书
+  # ============================================
+  traefik:
+    image: traefik:v3.1
+    container_name: mixmlaal-traefik
+    restart: unless-stopped
+    command:
+      # API 配置
+      - --api.insecure=true
+      - --api.dashboard=true
+      # 日志
+      - --log.level=INFO
+      - --accesslog=true
+      # Docker 提供者
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=mixmlaal-network
+      # 入口点
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # 证书配置（Let's Encrypt）
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:-youremail@example.com}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-letsencrypt:/letsencrypt
+    networks:
+      - mixmlaal-network
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # 数据库服务
+  # ============================================
+  mysql:
+    image: mysql:8.0
+    container_name: mixmlaal-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mixmlaal}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ../../04-数据库层/mixmlaal-mysql-sql/:/docker-entrypoint-initdb.d/
+    networks:
+      - mixmlaal-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mixmlaal-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123456}
+    volumes:
+      - redis-data:/data
+    networks:
+      - mixmlaal-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # 后端服务
+  # ============================================
+  node-api:
+    build:
+      context: ../../02-后端微服务集群/mixmlaal-node-api
+      dockerfile: Dockerfile
+    container_name: mixmlaal-node-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 8080
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mixmlaal}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123456}
+      JWT_SECRET: ${JWT_SECRET:-mixmlaal-super-secret-jwt-key-change-this}
+    volumes:
+      - ./logs/node-api:/app/logs
+    networks:
+      - mixmlaal-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      # 主域名 API
+      - "traefik.http.routers.api-service.rule=Host(`laal.top`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.api-service.entrypoints=websecure"
+      - "traefik.http.routers.api-service.tls.certresolver=myresolver"
+      - "traefik.http.routers.api-service.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+      - "traefik.http.services.api-service.loadbalancer.server.port=8080"
+      # api.laal.top
+      - "traefik.http.routers.api-domain.rule=Host(`api.laal.top`)"
+      - "traefik.http.routers.api-domain.entrypoints=websecure"
+      - "traefik.http.routers.api-domain.tls.certresolver=myresolver"
+      - "traefik.http.services.api-domain.loadbalancer.server.port=8080"
+
+  # ============================================
+  # 前端服务
+  # ============================================
+  pc-frontend:
+    build:
+      context: ../../01-前端集群/mixmlaal-web-vue-pc
+      dockerfile: Dockerfile
+    container_name: mixmlaal-pc-frontend
+    environment:
+      VITE_API_BASE_URL: https://laal.top/api/v1
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      # 主域名 + www
+      - "traefik.http.routers.main-frontend.rule=Host(`laal.top`, `www.laal.top`, `portal.laal.top`, `blog.laal.top`, `video.laal.top`, `dy.laal.top`, `shop.laal.top`, `mall.laal.top`, `market.laal.top`, `store.laal.top`, `dnpj.laal.top`, `user.laal.top`, `center.laal.top`, `gy.laal.top`, `help.laal.top`, `news.laal.top`, `pay.laal.top`, `service.laal.top`, `sj.laal.top`, `sp.laal.top`, `support.laal.top`, `test.laal.top`, `dev.laal.top`, `wp.laal.top`, `xw.laal.top`, `yp.laal.top`, `yy.laal.top`)"
+      - "traefik.http.routers.main-frontend.entrypoints=websecure"
+      - "traefik.http.routers.main-frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.main-frontend.loadbalancer.server.port=80"
+      # HTTP 自动重定向到 HTTPS
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  driver-app:
+    build:
+      context: ../../01-前端集群/mixmlaal-web-driver-vue
+      dockerfile: Dockerfile
+    container_name: mixmlaal-driver-app
+    environment:
+      VITE_API_BASE_URL: https://laal.top/api/v1
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.driver-app.rule=Host(`laal.top`) && PathPrefix(`/driver/`) || Host(`dh.laal.top`, `cj.laal.top`)"
+      - "traefik.http.routers.driver-app.entrypoints=websecure"
+      - "traefik.http.routers.driver-app.tls.certresolver=myresolver"
+      - "traefik.http.services.driver-app.loadbalancer.server.port=80"
+
+  merchant-admin:
+    build:
+      context: ../../01-前端集群/mixmlaal-web-merchant-vue
+      dockerfile: Dockerfile
+    container_name: mixmlaal-merchant-admin
+    environment:
+      VITE_API_BASE_URL: https://laal.top/api/v1
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.merchant-admin.rule=Host(`laal.top`) && PathPrefix(`/merchant/`)"
+      - "traefik.http.routers.merchant-admin.entrypoints=websecure"
+      - "traefik.http.routers.merchant-admin.tls.certresolver=myresolver"
+      - "traefik.http.services.merchant-admin.loadbalancer.server.port=80"
+
+  h5-mobile:
+    build:
+      context: ../../01-前端集群/mixmlaal-web-h5-mobile
+      dockerfile: Dockerfile
+    container_name: mixmlaal-h5-mobile
+    environment:
+      VITE_API_BASE_URL: https://laal.top/api/v1
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.h5-mobile.rule=Host(`laal.top`) && PathPrefix(`/h5/`) || Host(`app.laal.top`, `mobile.laal.top`, `m.laal.top`)"
+      - "traefik.http.routers.h5-mobile.entrypoints=websecure"
+      - "traefik.http.routers.h5-mobile.tls.certresolver=myresolver"
+      - "traefik.http.services.h5-mobile.loadbalancer.server.port=80"
+
+  react-admin:
+    build:
+      context: ../../01-前端集群/mixmlaal-web-react-admin
+      dockerfile: Dockerfile
+    container_name: mixmlaal-react-admin
+    environment:
+      VITE_API_BASE_URL: https://laal.top/api/v1
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.react-admin.rule=Host(`laal.top`) && PathPrefix(`/admin/`, `/admin-react/`) || Host(`admin.laal.top`, `login.laal.top`, `auth.laal.top`, `secure.laal.top`, `cloud.laal.top`, `fwq.laal.top`, `data.laal.top`, `stats.laal.top`)"
+      - "traefik.http.routers.react-admin.entrypoints=websecure"
+      - "traefik.http.routers.react-admin.tls.certresolver=myresolver"
+      - "traefik.http.services.react-admin.loadbalancer.server.port=80"
+
+  ruoyi-admin:
+    build:
+      context: ../../01-前端集群/mixmlaal-web-ruoyi-vue
+      dockerfile: Dockerfile
+    container_name: mixmlaal-ruoyi-admin
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ruoyi-admin.rule=Host(`laal.top`) && PathPrefix(`/ruoyi/`)"
+      - "traefik.http.routers.ruoyi-admin.entrypoints=websecure"
+      - "traefik.http.routers.ruoyi-admin.tls.certresolver=myresolver"
+      - "traefik.http.services.ruoyi-admin.loadbalancer.server.port=80"
+
+  # ============================================
+  # 静态资源服务
+  # ============================================
+  static-server:
+    image: nginx:alpine
+    container_name: mixmlaal-static-server
+    volumes:
+      - ./static-assets:/usr/share/nginx/html
+      - ../../07-公共资源:/usr/share/nginx/html/public
+    networks:
+      - mixmlaal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.static-server.rule=Host(`laal.top`) && PathPrefix(`/static/`) || Host(`img.laal.top`)"
+      - "traefik.http.routers.static-server.entrypoints=websecure"
+      - "traefik.http.routers.static-server.tls.certresolver=myresolver"
+      - "traefik.http.services.static-server.loadbalancer.server.port=80"
+
+networks:
+  mixmlaal-network:
+    driver: bridge
+
+volumes:
+  traefik-letsencrypt:
+  mysql-data:
+  redis-data:
+

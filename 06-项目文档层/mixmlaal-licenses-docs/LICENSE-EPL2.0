@@ -1,0 +1,130 @@
+Eclipse Public License - v 2.0
+
+THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE PUBLIC LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
+
+1. DEFINITIONS
+
+"Contribution" means:
+
+a) in the case of the initial Contributor, the initial content Distributed under this Agreement, and
+
+b) in the case of each subsequent Contributor:
+
+i) changes to the Program, and
+
+ii) additions to the Program;
+
+where such changes and/or additions to the Program originate from and are Distributed by that particular Contributor. A Contribution "originates" from a Contributor if it was added to the Program by such Contributor itself or anyone acting on such Contributor's behalf. Contributions do not include changes or additions to the Program that are not Modified Works.
+
+"Contributor" means any person or entity that Distributes the Program.
+
+"Licensed Patents" mean patent claims licensable by a Contributor which are necessarily infringed by the use or sale of its Contribution alone or when combined with the Program.
+
+"Program" means the Contributions Distributed in accordance with this Agreement.
+
+"Recipient" means anyone who receives the Program under this Agreement or any Secondary License (as applicable), including Contributors.
+
+"Derivative Works" shall mean any work, whether in Source Code or other form, that is based on (or derived from) the Program and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship.
+
+"Modified Works" shall mean any work in Source Code or other form that results from an addition to, deletion from, or modification of the contents of the Program, including, for purposes of clarity any new file in Source Code form that contains any contents of the Program. Modified Works shall not include works that contain only declarations, interfaces, types, classes, structures, or files of the Program in isolation or in any combination that is not a Derivative Work of the Program. For clarity, Modified Works shall not include any work that is linked (or bound) to the Program solely through an interface, or any work that is otherwise separated from and independent of the Program.
+
+"Source Code" means the preferred form of the Program for making modifications to it, including all modules it contains, plus any associated interface definition files, scripts used to control compilation and installation of an Executable, or source code differential comparisons against either the original Program or another well-known, available reference Program. The Source Code can be in a compressed or archival form, provided the appropriate decompression or de-archiving software is widely available for no charge.
+
+"Secondary License" means either the GNU General Public License, Version 2.0, or any later versions of that license, or the GNU Lesser General Public License, Version 2.1 or any later versions of that license.
+
+"Executive Director" means the executive director of the Eclipse Foundation, or any successor entity.
+
+"Eclipse Foundation" means the Eclipse Foundation, Inc., a Delaware not-for-profit corporation.
+
+"Eclipse Distribution License" means the Eclipse Distribution License - v 1.0, which is attached to this Agreement as Exhibit A.
+
+2. GRANT OF RIGHTS
+
+a) Subject to the terms of this Agreement, each Contributor hereby grants Recipient a non-exclusive, worldwide, royalty-free copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, distribute and sublicense the Contribution of such Contributor and such derivative works, in whole or in part.
+
+b) Subject to the terms of this Agreement, each Contributor hereby grants Recipient a non-exclusive, worldwide, royalty-free patent license under Licensed Patents to make, use, sell, offer to sell, import and otherwise transfer the Contribution of such Contributor in whole or in part, alone or in combination with other Contributions or the Program.
+
+c) In the event Recipient institutes patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Program (excluding combinations of the Program with other software or hardware) infringes a patent held by Recipient, then any patent licenses granted to such Recipient under this Agreement for the Program shall terminate as of the date such litigation is filed.
+
+3. REQUIREMENTS
+
+a) If Recipient Distributes the Program in any form (including, but not limited to, Source Code form, object code form, and executable form), Recipient must:
+
+i) provide a copy of this Agreement to any Recipient of the Program;
+
+ii) cause the Program to be licensed under the terms of this Agreement;
+
+iii) in the case of any Modified Works that Recipient Distributes, cause to be prominently displayed in all such Modified Works a notice stating that Recipient has modified the Program and the date of modification; and
+
+iv) in the case of any Modified Works that Recipient Distributes, cause to be prominently displayed in all such Modified Works a copy of the notice set forth in Exhibit B.
+
+b) Recipient may Distribute the Program as part of a Larger Work provided that:
+
+i) Recipient makes a copy of this Agreement available to all recipients of the Larger Work; and
+
+ii) the Program is Distributed in accordance with this Agreement.
+
+c) Recipient may Distribute a Modified Work as part of a Larger Work provided that:
+
+i) Recipient makes a copy of this Agreement available to all recipients of the Larger Work; and
+
+ii) the Modified Work is Distributed in accordance with this Agreement.
+
+4. DISTRIBUTION OF MODIFIED WORKS
+
+a) If Recipient Distributes a Modified Work, such Modified Work must be accompanied by a clear statement indicating that it is a Modified Work. This statement should be part of the notice described in Section 3.a.iii.
+
+b) Recipient may not remove or alter any copyright, patent, or other proprietary rights notice contained in the Program.
+
+5. DISTRIBUTION OF EXECUTABLES
+
+If Recipient Distributes an Executable of the Program or a Modified Work, Recipient must also make the Source Code of the Program or Modified Work available to the recipients of the Executable, either by including the Source Code with the Executable, or by providing a written offer to provide the Source Code to anyone who requests it, for a period of three (3) years after the date the Executable was Distributed, at a price no more than Recipient's reasonable cost of physically performing such distribution.
+
+6. SECONDARY LICENSES
+
+a) If Recipient Distributes the Program or a Modified Work under a Secondary License, Recipient must also make the Source Code available as described in Section 5.
+
+b) Recipient may not Distribute the Program or a Modified Work under a Secondary License without also making the Source Code available as described in Section 5.
+
+7. NO WARRANTY
+
+EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, THE PROGRAM IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. Each Recipient is solely responsible for determining the appropriateness of using and distributing the Program and assumes all risks associated with its exercise of rights under this Agreement, including but not limited to the risks and costs of program errors, compliance with applicable laws, damage to or loss of data, programs or equipment, and unavailability or interruption of operations.
+
+8. DISCLAIMER OF LIABILITY
+
+EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, NEITHER RECIPIENT NOR ANY CONTRIBUTORS SHALL HAVE ANY LIABILITY FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING WITHOUT LIMITATION LOST PROFITS), HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OR DISTRIBUTION OF THE PROGRAM OR THE EXERCISE OF ANY RIGHTS GRANTED HEREUNDER, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+9. GENERAL
+
+a) If any provision of this Agreement is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this Agreement, and without further action by the parties hereto, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
+
+b) Recipient may choose to accept this Agreement or any Secondary License. If Recipient does not accept this Agreement or any Secondary License, Recipient may not use, reproduce, modify, Distribute or sublicense the Program or any part thereof.
+
+c) Each Contributor represents that it believes its Contributions are its original creation(s) or it has sufficient rights to grant the rights to its Contributions conveyed by this Agreement.
+
+d) This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America.
+
+e) No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose.
+
+f) Each party consents to exclusive jurisdiction in the courts of New York, New York and the U.S. District Court for the Southern District of New York.
+
+g) The Eclipse Foundation and its Executive Director may choose to change the name and/or the website address at which the Agreement is available from time to time. In the event that the name or website address changes, the Eclipse Foundation will notify Contributors by posting a notice on the Eclipse website (http://www.eclipse.org) for a period of at least thirty (30) days.
+
+EXHIBIT A - Eclipse Distribution License - v 1.0
+
+The Eclipse Distribution License (EDL), Version 1.0 is a derivative of the Eclipse Public License (EPL), Version 1.0. The EDL modifies the EPL to apply to distribution of works that are not executable code, such as documentation, specifications, and test cases.
+
+The EDL is attached as a separate file.
+
+EXHIBIT B - NOTICE
+
+Copyright (c) [year] [name of copyright owner]
+
+This program and the accompanying materials are made available under the terms of the Eclipse Public License v. 2.0 which is available at http://www.eclipse.org/legal/epl-2.0.
+
+This Source Code may also be made available under the following Secondary Licenses when the conditions for such availability set forth in the Eclipse Public License, v. 2.0 are satisfied: GNU General Public License, version 2 with the GNU Classpath Exception which is available at https://www.gnu.org/software/classpath/license.html.
+
+SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+Contributors:
+- [name of contributor] - initial contribution

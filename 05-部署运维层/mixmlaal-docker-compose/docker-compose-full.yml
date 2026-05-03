@@ -1,0 +1,216 @@
+version: '3.8'
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: supermall-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: supermall
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./04-数据库层/mysql-sql:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - supermall-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: supermall-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - supermall-network
+
+  # Nacos服务注册中心
+  nacos:
+    image: nacos/nacos-server:v2.3.1
+    container_name: supermall-nacos
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos_config
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: root
+      MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false
+      JVM_XMS: 512m
+      JVM_XMX: 512m
+      JVM_XMN: 256m
+      NACOS_AUTH_ENABLE: false
+      TZ: Asia/Shanghai
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos-data:/home/nacos/data
+      - nacos-logs:/home/nacos/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - supermall-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # Vue3用户前台
+  vue-frontend:
+    build:
+      context: ../../01-前端集群/web-vue-pc
+      dockerfile: Dockerfile
+    container_name: supermall-vue-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - node-backend
+    networks:
+      - supermall-network
+
+  # React管理后台
+  react-admin:
+    build:
+      context: ../../01-前端集群/web-react-admin
+      dockerfile: Dockerfile
+    container_name: supermall-react-admin
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - node-backend
+    networks:
+      - supermall-network
+
+  # Node.js后端服务
+  node-backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: supermall-node-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: supermall
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      NACOS_HOST: nacos
+      NACOS_PORT: 8848
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      nacos:
+        condition: service_healthy
+    networks:
+      - supermall-network
+
+  # Python FastAPI数据服务
+  python-api:
+    build:
+      context: ../../02-后端微服务集群/python-fastapi
+      dockerfile: Dockerfile
+    container_name: supermall-python-api
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: supermall
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - supermall-network
+
+  # Node NestJS网关+IM
+  nest-gateway:
+    build:
+      context: ../../02-后端微服务集群/node-nest-gateway
+      dockerfile: Dockerfile
+    container_name: supermall-nest-gateway
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+      - "8003:8003"
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: supermall
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - supermall-network
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: supermall-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - vue-frontend
+      - react-admin
+      - node-backend
+      - python-api
+      - nest-gateway
+    networks:
+      - supermall-network
+
+volumes:
+  mysql-data:
+  redis-data:
+  nacos-data:
+  nacos-logs:
+  nginx-logs:
+
+networks:
+  supermall-network:
+    driver: bridge

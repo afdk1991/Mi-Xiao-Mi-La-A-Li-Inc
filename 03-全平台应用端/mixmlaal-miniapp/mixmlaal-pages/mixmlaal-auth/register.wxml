@@ -1,0 +1,80 @@
+<view class="auth-container">
+  <view class="auth-header">
+    <text class="header-title">用户注册</text>
+    <text class="header-subtitle">加入亿级商城</text>
+  </view>
+
+  <view class="auth-tabs">
+    <view class="tab-item {{activeTab === 'account' ? 'active' : ''}}" bindtap="switchTab" data-tab="account">账号</view>
+    <view class="tab-item {{activeTab === 'phone' ? 'active' : ''}}" bindtap="switchTab" data-tab="phone">手机</view>
+    <view class="tab-item {{activeTab === 'email' ? 'active' : ''}}" bindtap="switchTab" data-tab="email">邮箱</view>
+  </view>
+
+  <view class="auth-form">
+    <view wx:if="{{activeTab === 'account'}}">
+      <view class="form-item">
+        <input class="form-input" type="text" placeholder="请输入账号" value="{{account}}" bindinput="onInput" data-field="account" />
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="text" placeholder="请输入昵称" value="{{nickname}}" bindinput="onInput" data-field="nickname" />
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="password" placeholder="请输入密码" value="{{password}}" bindinput="onInput" data-field="password" />
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="password" placeholder="请再次输入密码" value="{{confirmPassword}}" bindinput="onInput" data-field="confirmPassword" />
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'phone'}}">
+      <view class="form-item">
+        <input class="form-input" type="number" maxlength="11" placeholder="请输入手机号" value="{{phone}}" bindinput="onInput" data-field="phone" />
+      </view>
+      <view class="form-item code-item">
+        <input class="form-input code-input" type="number" maxlength="6" placeholder="请输入验证码" value="{{code}}" bindinput="onInput" data-field="code" />
+        <button class="code-btn" bindtap="sendCode" disabled="{{codeCountdown > 0}}">{{codeCountdown > 0 ? codeCountdown + 's' : '获取验证码'}}</button>
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="text" placeholder="请输入昵称（可选）" value="{{nickname}}" bindinput="onInput" data-field="nickname" />
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="password" placeholder="请输入密码（可选）" value="{{password}}" bindinput="onInput" data-field="password" />
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'email'}}">
+      <view class="form-item">
+        <input class="form-input" type="email" placeholder="请输入邮箱" value="{{email}}" bindinput="onInput" data-field="email" />
+      </view>
+      <view class="form-item code-item">
+        <input class="form-input code-input" type="number" maxlength="6" placeholder="请输入验证码" value="{{code}}" bindinput="onInput" data-field="code" />
+        <button class="code-btn" bindtap="sendCode" disabled="{{codeCountdown > 0}}">{{codeCountdown > 0 ? codeCountdown + 's' : '获取验证码'}}</button>
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="text" placeholder="请输入昵称（可选）" value="{{nickname}}" bindinput="onInput" data-field="nickname" />
+      </view>
+      <view class="form-item">
+        <input class="form-input" type="password" placeholder="请输入密码（可选）" value="{{password}}" bindinput="onInput" data-field="password" />
+      </view>
+    </view>
+
+    <view class="agreement-item">
+      <checkbox-group bindchange="onAgreementChange">
+        <label class="agreement-label">
+          <checkbox value="{{agree}}" checked="{{agree}}" />
+          <text class="agreement-text">我已阅读并同意</text>
+          <text class="agreement-link" bindtap="showAgreement">《用户注册协议》</text>
+        </label>
+      </checkbox-group>
+    </view>
+
+    <view class="error-msg" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+
+    <button class="submit-btn" bindtap="handleRegister" loading="{{loading}}">注册</button>
+
+    <view class="auth-footer">
+      <text class="footer-text">已有账号？</text>
+      <navigator url="/pages/auth/login" class="footer-link">立即登录</navigator>
+    </view>
+  </view>
+</view>

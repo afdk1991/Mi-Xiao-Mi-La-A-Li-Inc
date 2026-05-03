@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: supermall-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./04-数据库层/mysql-sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql-data:/var/lib/mysql
+    networks:
+      - supermall-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7
+    container_name: supermall-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - supermall-network
+
+  # Node.js 后端服务 (现有的那个)
+  backend:
+    build:
+      context: ./backend
+    container_name: supermall-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - supermall-network
+
+  # Vue3 用户前端
+  frontend-vue:
+    build:
+      context: ./01-前端集群/web-vue-pc
+    container_name: supermall-frontend-vue
+    ports:
+      - "8080:8080"
+    networks:
+      - supermall-network
+
+  # React 管理后台
+  frontend-react:
+    build:
+      context: ./01-前端集群/web-react-admin
+    container_name: supermall-frontend-react
+    ports:
+      - "3000:3000"
+    networks:
+      - supermall-network
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: supermall-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./05-部署运维层/nginx-config/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend-vue
+      - frontend-react
+      - backend
+    networks:
+      - supermall-network
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  supermall-network:
+    driver: bridge

@@ -1,0 +1,23 @@
+{
+  "name": "mixmlaal",
+  "version": "1.0.0",
+  "description": "米小米拉阿狸 - 全球卓越的一站式多元化出行+本地生活生态平台",
+  "scripts": {
+    "dev:driver": "cd 01-前端集群/mixmlaal-web-driver-vue && npm run dev",
+    "dev:merchant": "cd 01-前端集群/mixmlaal-web-merchant-vue && npm run dev",
+    "dev:admin": "cd 01-前端集群/mixmlaal-web-react-admin && npm run dev",
+    "dev:api": "cd 02-后端微服务集群/mixmlaal-node-api && npm run dev",
+    "build:driver": "cd 01-前端集群/mixmlaal-web-driver-vue && npm run build",
+    "build:merchant": "cd 01-前端集群/mixmlaal-web-merchant-vue && npm run build",
+    "build:admin": "cd 01-前端集群/mixmlaal-web-react-admin && npm run build",
+    "build:all": "npm run build:driver && npm run build:merchant && npm run build:admin",
+    "deploy": "cd 05-部署运维层/mixmlaal-deploy-config && docker-compose -f docker-compose.prod.yml up -d",
+    "deploy:stop": "cd 05-部署运维层/mixmlaal-deploy-config && docker-compose -f docker-compose.prod.yml down",
+    "deploy:logs": "cd 05-部署运维层/mixmlaal-deploy-config && docker-compose -f docker-compose.prod.yml logs -f",
+    "deploy:status": "cd 05-部署运维层/mixmlaal-deploy-config && docker-compose -f docker-compose.prod.yml ps",
+    "install:all": "cd 01-前端集群/mixmlaal-web-driver-vue && npm install && cd ../mixmlaal-web-merchant-vue && npm install && cd ../mixmlaal-web-react-admin && npm install && cd ../../02-后端微服务集群/mixmlaal-node-api && npm install"
+  },
+  "keywords": ["ridesharing", "delivery", "local-services", "platform"],
+  "author": "MIXMLAAL Team",
+  "license": "MIT"
+}
