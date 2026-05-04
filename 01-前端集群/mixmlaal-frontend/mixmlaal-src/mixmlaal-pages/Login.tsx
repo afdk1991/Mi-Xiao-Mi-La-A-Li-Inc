@@ -11,19 +11,16 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Account login form
   const [accountForm, setAccountForm] = useState({
     account: '',
     password: '',
   });
 
-  // Phone login form
   const [phoneForm, setPhoneForm] = useState({
     phone: '',
     code: '',
   });
 
-  // Email login form
   const [emailForm, setEmailForm] = useState({
     email: '',
     code: '',
@@ -49,10 +46,18 @@ function Login() {
           setError('请先输入手机号');
           return;
         }
+        if (!/^1[3-9]\d{9}$/.test(phoneForm.phone)) {
+          setError('请输入有效的手机号');
+          return;
+        }
         data = { phone: phoneForm.phone };
       } else {
         if (!emailForm.email) {
           setError('请先输入邮箱');
+          return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailForm.email)) {
+          setError('请输入有效的邮箱地址');
           return;
         }
         data = { email: emailForm.email };
@@ -155,109 +160,149 @@ function Login() {
     }
   };
 
+  const tabs = [
+    { id: 'account', label: '账号密码' },
+    { id: 'phone', label: '手机登录' },
+    { id: 'email', label: '邮箱登录' },
+  ];
+
+  const thirdPartyOptions = [
+    { platform: 'wechat', label: '微信', color: 'bg-green-500', icon: 'W' },
+    { platform: 'qq', label: 'QQ', color: 'bg-blue-500', icon: 'Q' },
+    { platform: 'weibo', label: '微博', color: 'bg-red-500', icon: 'V' },
+    { platform: 'alipay', label: '支付宝', color: 'bg-blue-600', icon: 'A' },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-600 p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">用户登录</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 p-4">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white rounded-full opacity-10 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white rounded-full opacity-10 blur-3xl" />
+      </div>
+
+      <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-2xl font-bold">M</span>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">欢迎回来</h2>
+          <p className="text-gray-500 mt-1">登录您的账号，开启精彩体验</p>
+        </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
             {error}
           </div>
         )}
 
-        {/* Tabs */}
         <div className="mb-6">
           <div className="flex border-b border-gray-200">
-            <button
-              className={`py-2 px-4 font-medium ${
-                activeTab === 'account' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
-              }`}
-              onClick={() => setActiveTab('account')}
-            >
-              账号密码
-            </button>
-            <button
-              className={`py-2 px-4 font-medium ${
-                activeTab === 'phone' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
-              }`}
-              onClick={() => setActiveTab('phone')}
-            >
-              手机登录
-            </button>
-            <button
-              className={`py-2 px-4 font-medium ${
-                activeTab === 'email' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
-              }`}
-              onClick={() => setActiveTab('email')}
-            >
-              邮箱登录
-            </button>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`flex-1 py-3 font-medium transition-all duration-300 ${
+                  activeTab === tab.id
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setError('');
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Account Login Form */}
         {activeTab === 'account' && (
-          <form onSubmit={handleAccountLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">账号</label>
+          <form onSubmit={handleAccountLogin} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">账号</label>
               <input
                 type="text"
                 value={accountForm.account}
                 onChange={(e) => setAccountForm({ ...accountForm, account: e.target.value })}
-                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="请输入账号"
                 required
               />
             </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">密码</label>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">密码</label>
               <input
                 type="password"
                 value={accountForm.password}
                 onChange={(e) => setAccountForm({ ...accountForm, password: e.target.value })}
-                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="请输入密码"
                 required
               />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                <span className="ml-2 text-sm text-gray-600">记住我</span>
+              </label>
+              <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                忘记密码？
+              </Link>
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              {loading ? '登录中...' : '登录'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  登录中...
+                </span>
+              ) : (
+                '登录'
+              )}
             </button>
           </form>
         )}
 
-        {/* Phone Login Form */}
         {activeTab === 'phone' && (
-          <form onSubmit={handlePhoneLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">手机号</label>
+          <form onSubmit={handlePhoneLogin} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">手机号</label>
               <input
                 type="tel"
                 value={phoneForm.phone}
                 onChange={(e) => setPhoneForm({ ...phoneForm, phone: e.target.value })}
-                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="请输入手机号"
                 required
                 pattern="^1[3-9]\d{9}$"
               />
             </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">验证码</label>
-              <div className="flex gap-2">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">验证码</label>
+              <div className="flex gap-3">
                 <input
                   type="text"
                   value={phoneForm.code}
                   onChange={(e) => setPhoneForm({ ...phoneForm, code: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="请输入验证码"
                   required
+                  maxLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => sendCode('phone')}
                   disabled={codeCountdown > 0}
-                  className="px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
                 >
                   {codeCountdown > 0 ? `${codeCountdown}s` : '获取验证码'}
                 </button>
@@ -266,41 +311,53 @@ function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              {loading ? '登录中...' : '登录'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  登录中...
+                </span>
+              ) : (
+                '登录'
+              )}
             </button>
           </form>
         )}
 
-        {/* Email Login Form */}
         {activeTab === 'email' && (
-          <form onSubmit={handleEmailLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">邮箱</label>
+          <form onSubmit={handleEmailLogin} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">邮箱</label>
               <input
                 type="email"
                 value={emailForm.email}
                 onChange={(e) => setEmailForm({ ...emailForm, email: e.target.value })}
-                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="请输入邮箱"
                 required
               />
             </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">验证码</label>
-              <div className="flex gap-2">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">验证码</label>
+              <div className="flex gap-3">
                 <input
                   type="text"
                   value={emailForm.code}
                   onChange={(e) => setEmailForm({ ...emailForm, code: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="请输入验证码"
                   required
+                  maxLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => sendCode('email')}
                   disabled={codeCountdown > 0}
-                  className="px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
                 >
                   {codeCountdown > 0 ? `${codeCountdown}s` : '获取验证码'}
                 </button>
@@ -309,55 +366,47 @@ function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              {loading ? '登录中...' : '登录'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  登录中...
+                </span>
+              ) : (
+                '登录'
+              )}
             </button>
           </form>
         )}
 
-        {/* Third Party Login */}
         <div className="mt-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1 h-px bg-gray-300"></div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px bg-gray-200" />
             <span className="text-gray-500 text-sm">其他登录方式</span>
-            <div className="flex-1 h-px bg-gray-300"></div>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={() => handleThirdPartyLogin('wechat')}
-              className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold hover:bg-green-600 transition-colors"
-              disabled={loading}
-            >
-              W
-            </button>
-            <button
-              onClick={() => handleThirdPartyLogin('qq')}
-              className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold hover:bg-blue-600 transition-colors"
-              disabled={loading}
-            >
-              Q
-            </button>
-            <button
-              onClick={() => handleThirdPartyLogin('weibo')}
-              className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-bold hover:bg-red-600 transition-colors"
-              disabled={loading}
-            >
-              V
-            </button>
-            <button
-              onClick={() => handleThirdPartyLogin('alipay')}
-              className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold hover:bg-blue-700 transition-colors"
-              disabled={loading}
-            >
-              A
-            </button>
+          <div className="flex justify-center gap-4 mt-4">
+            {thirdPartyOptions.map((option) => (
+              <button
+                key={option.platform}
+                onClick={() => handleThirdPartyLogin(option.platform)}
+                disabled={loading}
+                className={`w-12 h-12 ${option.color} rounded-full flex items-center justify-center text-white font-bold hover:opacity-90 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110`}
+                title={option.label}
+              >
+                {option.icon}
+              </button>
+            ))}
           </div>
         </div>
 
         <p className="mt-6 text-center text-gray-600">
           还没有账号？{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-blue-600 hover:underline font-medium">
             立即注册
           </Link>
         </p>
