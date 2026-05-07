@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: supermall-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: MixmLa@2025#SecureDB
+      MYSQL_DATABASE: mixmlaal
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./04-数据库层/mysql-sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - supermall-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pMixmLa@2025#SecureDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: supermall-redis
+    command: redis-server --requirepass MixmLa@2025#RedisSecure
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - supermall-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Node.js 后端服务
+  backend:
+    build:
+      context: /root/Mi-Xiao-Mi-La-A-Li-Inc/02-后端微服务集群/mixmlaal-node-api
+    container_name: supermall-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: MixmLa@2025#SecureDB
+      MYSQL_DATABASE: mixmlaal
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: MixmLa@2025#RedisSecure
+      JWT_SECRET: MixmLa@JWT#2025#SecureToken#RandomKey#9876543210
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - supermall-network
+    restart: unless-stopped
+
+  # Vue3 用户前端
+  frontend-vue:
+    build:
+      context: /root/Mi-Xiao-Mi-La-A-Li-Inc/01-前端集群/mixmlaal-web-vue-pc
+    container_name: supermall-frontend-vue
+    ports:
+      - "8080:8080"
+    networks:
+      - supermall-network
+    restart: unless-stopped
+
+  # React 管理后台
+  frontend-react:
+    build:
+      context: /root/Mi-Xiao-Mi-La-A-Li-Inc/01-前端集群/mixmlaal-web-react-admin
+    container_name: supermall-frontend-react
+    ports:
+      - "3000:3000"
+    networks:
+      - supermall-network
+    restart: unless-stopped
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: supermall-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./05-部署运维层/mixmlaal-nginx-config/nginx-ssl.conf:/etc/nginx/nginx.conf:ro
+      - nginx-ssl:/etc/nginx/ssl
+      - certbot-www:/var/www/certbot:ro
+      - certbot-conf:/etc/letsencrypt:ro
+    depends_on:
+      - frontend-vue
+      - frontend-react
+      - backend
+    networks:
+      - supermall-network
+    restart: unless-stopped
+
+  # Certbot SSL证书申请
+  certbot:
+    image: certbot/certbot
+    container_name: supermall-certbot
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-conf:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - supermall-network
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+  nginx-ssl:
+  certbot-www:
+  certbot-conf:
+
+networks:
+  supermall-network:
+    driver: bridge

@@ -3,8 +3,8 @@ import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
 import { setRouter } from './utils/uni'
-import { getVersionInfo } from '../../../shared/utils/version.js'
-import { autoCheckVersion } from '../../../shared/services/version-checker.js'
+import { getVersionInfo } from '../../../../07-公共资源/mixmlaal-shared/mixmlaal-utils/version.js'
+import { autoCheckVersion } from '../../../../07-公共资源/mixmlaal-shared/mixmlaal-shared-services/version-checker.js'
 import { preloadCriticalResources, lazyLoadImages, monitorPerformance, optimizeFirstPaint } from './utils/performance.js'
 
 // 优化首屏加载

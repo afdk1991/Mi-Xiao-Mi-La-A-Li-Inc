@@ -76,7 +76,7 @@ services:
   # Vue3用户前台
   vue-frontend:
     build:
-      context: ../../01-前端集群/web-vue-pc
+      context: ../../01-前端集群/mixmlaal-web-vue-pc
       dockerfile: Dockerfile
     container_name: supermall-vue-frontend
     restart: unless-stopped
@@ -90,7 +90,7 @@ services:
   # React管理后台
   react-admin:
     build:
-      context: ../../01-前端集群/web-react-admin
+      context: ../../01-前端集群/mixmlaal-web-react-admin
       dockerfile: Dockerfile
     container_name: supermall-react-admin
     restart: unless-stopped
@@ -104,7 +104,7 @@ services:
   # Node.js后端服务
   node-backend:
     build:
-      context: ../../backend
+      context: ../../02-后端微服务集群/mixmlaal-node-backend
       dockerfile: Dockerfile
     container_name: supermall-node-backend
     restart: unless-stopped
@@ -134,7 +134,7 @@ services:
   # Python FastAPI数据服务
   python-api:
     build:
-      context: ../../02-后端微服务集群/python-fastapi
+      context: ../../02-后端微服务集群/mixmlaal-python-fastapi
       dockerfile: Dockerfile
     container_name: supermall-python-api
     restart: unless-stopped
@@ -159,7 +159,7 @@ services:
   # Node NestJS网关+IM
   nest-gateway:
     build:
-      context: ../../02-后端微服务集群/node-nest-gateway
+      context: ../../02-后端微服务集群/mixmlaal-node-nest-gateway
       dockerfile: Dockerfile
     container_name: supermall-nest-gateway
     restart: unless-stopped

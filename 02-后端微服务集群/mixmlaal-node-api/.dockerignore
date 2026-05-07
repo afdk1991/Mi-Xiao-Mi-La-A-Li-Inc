@@ -1,0 +1,14 @@
+node_modules
+.git
+*.md
+Dockerfile*
+docker-compose*
+.dockerignore
+eslint*
+jest.config*
+babel.config*
+mixmlaal-tests
+mixmlaal-test
+debug.js
+check-modules.js
+test-imports.js

@@ -11,7 +11,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./04-数据库层/mysql-sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - /root/Mi-Xiao-Mi-La-A-Li-Inc/04-数据库层/mysql-sql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql-data:/var/lib/mysql
     networks:
       - supermall-network
@@ -32,7 +32,7 @@ services:
     networks:
       - supermall-network
 
-  # Node.js 后端服务 (现有的那个)
+  # Node.js 后端服务
   backend:
     build:
       context: /root/Mi-Xiao-Mi-La-A-Li-Inc/02-后端微服务集群/mixmlaal-node-api
@@ -48,7 +48,7 @@ services:
   # Vue3 用户前端
   frontend-vue:
     build:
-      context: ./01-前端集群/mixmlaal-web-vue-pc
+      context: /root/Mi-Xiao-Mi-La-A-Li-Inc/01-前端集群/mixmlaal-web-vue-pc
     container_name: supermall-frontend-vue
     ports:
       - "8080:8080"
@@ -58,7 +58,7 @@ services:
   # React 管理后台
   frontend-react:
     build:
-      context: ./01-前端集群/mixmlaal-web-react-admin
+      context: /root/Mi-Xiao-Mi-La-A-Li-Inc/01-前端集群/mixmlaal-web-react-admin
     container_name: supermall-frontend-react
     ports:
       - "3000:3000"
@@ -73,7 +73,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./05-部署运维层/nginx-config/nginx.conf:/etc/nginx/nginx.conf
+      - /root/Mi-Xiao-Mi-La-A-Li-Inc/05-部署运维层/nginx-config/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - frontend-vue
       - frontend-react

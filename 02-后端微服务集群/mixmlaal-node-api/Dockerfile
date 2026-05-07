@@ -1,11 +1,23 @@
-FROM node:20-alpine
+# ============================================
+# Node.js 后端服务 Dockerfile
+# ============================================
 
+FROM node:18-alpine
+
+# 设置工作目录
 WORKDIR /app
 
+# 复制package文件
 COPY package*.json ./
-RUN npm install --production
 
+# 安装依赖
+RUN npm install --only=production
+
+# 复制应用代码
 COPY . .
 
-EXPOSE 8080
-CMD ["node", "src/index.js"]
+# 暴露端口
+EXPOSE 3001
+
+# 启动应用
+CMD ["node", "index.js"]

@@ -1,10 +1,4 @@
-# ============================================
-# laal.top 完整项目部署配置
-# ============================================
-version: '3.8'
-
 services:
-
   # ============================================
   # 数据库服务
   # ============================================
@@ -17,7 +11,7 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - mysql-data:/var/lib/mysql
-      - ../../04-数据库层/mixmlaal-mysql-sql/:/docker-entrypoint-initdb.d/
+      - ./04-数据库层/mixmlaal-mysql-sql/:/docker-entrypoint-initdb.d/
     networks:
       - mixmlaal-network
     ports:
@@ -32,7 +26,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: mixmlaal-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123456}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123456} --appendonly yes
     volumes:
       - redis-data:/data
     networks:
@@ -41,7 +35,7 @@ services:
       - "6379:6379"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123456}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -51,12 +45,12 @@ services:
   # ============================================
   node-api:
     build:
-      context: ../../02-后端微服务集群/mixmlaal-node-api
+      context: ./02-后端微服务集群/mixmlaal-node-api
       dockerfile: Dockerfile
     container_name: mixmlaal-node-api
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: 8080
+      PORT: 3001
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_USER: root
@@ -65,13 +59,10 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123456}
-      JWT_SECRET: ${JWT_SECRET:-mixmlaal-super-secret-jwt-key-change-this}
-    volumes:
-      - ./logs/node-api:/app/logs
     networks:
       - mixmlaal-network
     ports:
-      - "8080:8080"
+      - "3001:3001"
     depends_on:
       mysql:
         condition: service_healthy
@@ -83,25 +74,29 @@ services:
   # 前端服务
   # ============================================
   pc-frontend:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-vue-pc
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-pc-frontend
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
+    volumes:
+      - ./01-前端集群/mixmlaal-web-vue-pc/dist:/usr/share/nginx/html:ro
+      - ./01-前端集群/mixmlaal-web-vue-pc/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - mixmlaal-network
     ports:
-      - "3000:80"
+      - "3090:8080"
+    restart: unless-stopped
+
+  react-admin:
+    image: nginx:alpine
+    container_name: mixmlaal-react-admin
+    networks:
+      - mixmlaal-network
+    ports:
+      - "3002:3000"
     restart: unless-stopped
 
   driver-app:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-driver-vue
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-driver-app
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
@@ -109,12 +104,8 @@ services:
     restart: unless-stopped
 
   merchant-admin:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-merchant-vue
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-merchant-admin
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
@@ -122,41 +113,13 @@ services:
     restart: unless-stopped
 
   h5-mobile:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-h5-mobile
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-h5-mobile
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
       - "3005:80"
     restart: unless-stopped
-
-  react-admin:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-react-admin
-      dockerfile: Dockerfile
-    container_name: mixmlaal-react-admin
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
-    networks:
-      - mixmlaal-network
-    ports:
-      - "3002:80"
-    restart: unless-stopped
-
-  # ruoyi-admin:
-  #   build:
-  #     context: ../../01-前端集群/mixmlaal-web-ruoyi-vue
-  #     dockerfile: Dockerfile
-  #   container_name: mixmlaal-ruoyi-admin
-  #   networks:
-  #     - mixmlaal-network
-  #   ports:
-  #     - "3006:80"
-  #   restart: unless-stopped
 
   # ============================================
   # 静态资源服务
@@ -165,8 +128,7 @@ services:
     image: nginx:alpine
     container_name: mixmlaal-static-server
     volumes:
-      - ./static-assets:/usr/share/nginx/html
-      - ../../07-公共资源:/usr/share/nginx/html/public
+      - ./07-公共资源:/usr/share/nginx/html/public:ro
     networks:
       - mixmlaal-network
     ports:
@@ -174,16 +136,14 @@ services:
     restart: unless-stopped
 
   # ============================================
-  # Nginx 反向代理 - laal.top
+  # Nginx 反向代理
   # ============================================
   nginx:
     image: nginx:alpine
     container_name: mixmlaal-nginx
     volumes:
-      - ../mixmlaal-nginx-config/mixmlaal-conf-d/laal.top.conf:/etc/nginx/conf.d/default.conf
-      - ../mixmlaal-nginx-config/nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-      - ./logs/nginx:/var/log/nginx
+      - ./05-部署运维层/mixmlaal-nginx-config/mixmlaal-conf-d/laal.top-complete.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - mixmlaal-network
     ports:
@@ -198,11 +158,6 @@ services:
       - node-api
       - static-server
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ============================================
   # 监控服务
@@ -211,7 +166,7 @@ services:
     image: prom/prometheus:latest
     container_name: mixmlaal-prometheus
     volumes:
-      - ../mixmlaal-monitoring/mixmlaal-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./05-部署运维层/mixmlaal-monitoring/mixmlaal-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     networks:
       - mixmlaal-network
@@ -226,13 +181,11 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
     volumes:
-      - ../mixmlaal-monitoring/mixmlaal-grafana/mixmlaal-provisioning:/etc/grafana/provisioning
-      - ../mixmlaal-monitoring/mixmlaal-grafana/mixmlaal-dashboards:/etc/grafana/dashboards
       - grafana-data:/var/lib/grafana
     networks:
       - mixmlaal-network
     ports:
-      - "3001:3000"
+      - "3007:3000"
     depends_on:
       - prometheus
     restart: unless-stopped

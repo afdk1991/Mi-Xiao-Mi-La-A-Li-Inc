@@ -1,8 +1,6 @@
 # ============================================
-# laal.top 完整项目部署配置
+# MIXMLAAL 项目 Docker Compose 部署配置
 # ============================================
-version: '3.8'
-
 services:
 
   # ============================================
@@ -41,7 +39,7 @@ services:
       - "6379:6379"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123456}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,7 +54,7 @@ services:
     container_name: mixmlaal-node-api
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: 8080
+      PORT: 3001
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_USER: root
@@ -71,7 +69,7 @@ services:
     networks:
       - mixmlaal-network
     ports:
-      - "8080:8080"
+      - "3001:3001"
     depends_on:
       mysql:
         condition: service_healthy
@@ -80,28 +78,23 @@ services:
     restart: unless-stopped
 
   # ============================================
-  # 前端服务
+  # 前端服务（需要修复源码结构后才能构建）
+  # 暂时使用 nginx 占位容器
   # ============================================
   pc-frontend:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-vue-pc
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-pc-frontend
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
+    volumes:
+      - ../../01-前端集群/mixmlaal-web-vue-pc/nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - mixmlaal-network
     ports:
-      - "3000:80"
+      - "3090:8080"
     restart: unless-stopped
 
   driver-app:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-driver-vue
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-driver-app
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
@@ -109,12 +102,8 @@ services:
     restart: unless-stopped
 
   merchant-admin:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-merchant-vue
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-merchant-admin
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
@@ -122,12 +111,8 @@ services:
     restart: unless-stopped
 
   h5-mobile:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-h5-mobile
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-h5-mobile
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
@@ -135,28 +120,13 @@ services:
     restart: unless-stopped
 
   react-admin:
-    build:
-      context: ../../01-前端集群/mixmlaal-web-react-admin
-      dockerfile: Dockerfile
+    image: nginx:alpine
     container_name: mixmlaal-react-admin
-    environment:
-      VITE_API_BASE_URL: https://laal.top/api/v1
     networks:
       - mixmlaal-network
     ports:
-      - "3002:80"
+      - "3002:3000"
     restart: unless-stopped
-
-  # ruoyi-admin:
-  #   build:
-  #     context: ../../01-前端集群/mixmlaal-web-ruoyi-vue
-  #     dockerfile: Dockerfile
-  #   container_name: mixmlaal-ruoyi-admin
-  #   networks:
-  #     - mixmlaal-network
-  #   ports:
-  #     - "3006:80"
-  #   restart: unless-stopped
 
   # ============================================
   # 静态资源服务
@@ -174,27 +144,28 @@ services:
     restart: unless-stopped
 
   # ============================================
-  # Nginx 反向代理 - laal.top
+  # Nginx 反向代理
   # ============================================
   nginx:
     image: nginx:alpine
     container_name: mixmlaal-nginx
     volumes:
-      - ../mixmlaal-nginx-config/mixmlaal-conf-d/laal.top.conf:/etc/nginx/conf.d/default.conf
+      - ../mixmlaal-nginx-config/mixmlaal-conf-d/deploy.conf:/etc/nginx/conf.d/default.conf
       - ../mixmlaal-nginx-config/nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
       - ./logs/nginx:/var/log/nginx
     networks:
       - mixmlaal-network
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     depends_on:
       - pc-frontend
       - driver-app
       - merchant-admin
       - h5-mobile
       - react-admin
+      # - ruoyi-admin  # 跳过: 项目缺少 package.json
       - node-api
       - static-server
     restart: unless-stopped
@@ -232,7 +203,7 @@ services:
     networks:
       - mixmlaal-network
     ports:
-      - "3001:3000"
+      - "3007:3000"
     depends_on:
       - prometheus
     restart: unless-stopped
